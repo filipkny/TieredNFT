@@ -80,35 +80,17 @@ def test_fail_mint_exceeded_max_supply(smartcontract, owner_account):
     with brownie.reverts("Exceeded max limit of allowed token mints"):
         smartcontract.mint(2, {"from": accounts[0], "value": Web3.toWei(0.9, "ether")})
 
-#
-# def test_fail_mint_exceeded_max_supply(smartcontract):
-#     smartcontract.flipSaleState()
-#
-#
-#
-#     with brownie.reverts("Exceeded max limit of allowed token mints"):
-#         for _ in range(100):
-#             smartcontract.mint(100, {"from": accounts[0], "value": Web3.toWei(8, "ether")})
-#
-#         smartcontract.mint(1, {"from": accounts[0], "value": Web3.toWei(8, "ether")})
-#
-# def test_whitdraw(smartcontract):
-#
-#     owner_account = get_account()
-#     og_owner_amount = owner_account.balance()
-#
-#     smartcontract.flipSaleState({"from": owner_account})
-#     smartcontract.mint(1, {"from": accounts[1], "value": Web3.toWei(8, "ether")})
-#     smartcontract.withdraw({"from":owner_account})
-#
-#     assert owner_account.balance() > og_owner_amount
-#
-# def test_balance_of(smartcontract):
-#
-#     owner_account = get_account()
-#     og_owner_amount = owner_account.balance()
-#     smartcontract.flipSaleState({"from": owner_account})
-#
-#     smartcontract.mint(1, {"from": accounts[1], "value": Web3.toWei(8, "ether")})
-#
-#     assert smartcontract.balanceOf(accounts[1]) == 1
+def test_withdraw(smartcontract, owner_account):
+    starting_balance = owner_account.balance()
+    smartcontract.flipSaleState()
+    smartcontract.mint(0, {"from": accounts[1], "value": Web3.toWei(0.42, "ether")})
+    smartcontract.withdraw({"from" : owner_account})
+
+    assert owner_account.balance() > starting_balance;
+
+def test_fail_invalid_tier(smartcontract, owner_account):
+    smartcontract.flipSaleState()
+    with brownie.reverts("Exceeded max limit of allowed token mints"):
+        smartcontract.mint(3, {"from": accounts[1], "value": Web3.toWei(0.42, "ether")})
+
+    

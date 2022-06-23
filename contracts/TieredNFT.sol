@@ -25,10 +25,10 @@ contract TieredNFT is ERC721, Ownable {
     // The tier struct will keep all the information about the tier
     struct Tier {
         uint256 price;
-        uint256 totalSupply;
-        uint256 maxSupply;
-        uint256 startingIndex;
-        uint256 mintsPerAddress;
+        uint16 totalSupply;
+        uint16 maxSupply;
+        uint16 startingIndex;
+        uint8 mintsPerAddress;
     }
 
     // Mapping used to limit the mints per tier
@@ -70,12 +70,6 @@ contract TieredNFT is ERC721, Ownable {
         saleIsActive = !saleIsActive;
     }
 
-    function safeTransferFrom(address from, address to, uint256 tokenId)
-    isApprovedOrOwner(tokenId)
-    public override {
-        safeTransferFrom(from, to, tokenId, '');
-    }
-
     // @param tier The tier of the NFT to be minted
     function mint(uint tier) public payable {
         require(saleIsActive, "Sale is not active");
@@ -84,8 +78,9 @@ contract TieredNFT is ERC721, Ownable {
         require(addressCountsPerTier[tier][msg.sender] + 1 <= tiers[tier].mintsPerAddress, "Max number of mints per address reached");
 
         addressCountsPerTier[tier][msg.sender] = addressCountsPerTier[tier][msg.sender] + 1;
-        uint tierTotalSuppy = tiers[tier].totalSupply;
+        uint16 tierTotalSuppy = tiers[tier].totalSupply;
         tiers[tier].totalSupply = tierTotalSuppy + 1;
+        
         _safeMint(msg.sender, tiers[tier].startingIndex + tierTotalSuppy);
         
     }

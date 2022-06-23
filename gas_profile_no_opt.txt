@@ -1,0 +1,30 @@
+Brownie v1.17.2 - Python development framework for Ethereum
+
+============================= test session starts ==============================
+platform darwin -- Python 3.8.2, pytest-6.2.5, py-1.11.0, pluggy-1.0.0
+rootdir: /Users/fknyszewski/Documents/filip/nfts/TieredNFT
+plugins: eth-brownie-1.17.2, xdist-1.34.0, hypothesis-6.27.3, web3-5.25.0, forked-1.3.0
+collected 6 items
+
+Launching 'ganache-cli --accounts 300 --hardfork istanbul --gasLimit 12000000 --mnemonic brownie --port 8545 --defaultBalanceEther 1000'...
+
+tests/unit/test_lottery_unit.py ......                                   [100%]
+================================= Gas Profile ==================================
+
+
+[0;1;35mTieredNFT[0;m <Contract>
+   ├─ constructor   -  avg: 1938660  avg (confirmed): 1938660  low: 1938660  high: 1938660
+   ├─ mint          -  avg:   93589  avg (confirmed):  100642  low:   24203  high:  115651
+   └─ flipSaleState -  avg:   27989  avg (confirmed):   27989  low:   27989  high:   27989
+
+============================== 6 passed in 7.21s ===============================
+Terminating local RPC client...
+
+// Old struct
+struct Tier {
+        uint256 price;
+        uint256 totalSupply;
+        uint256 maxSupply;
+        uint256 startingIndex;
+        uint256 mintsPerAddress;
+    }
