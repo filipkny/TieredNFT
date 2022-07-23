@@ -1,23 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.1;
+pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
-// TODO
-// 1. Implement opensea royalties [x] (ownable)
-// 3. Create full test suite
-// 2. Add uris
-// 5. Check security (https://www.youtube.com/watch?v=TmZ8gH-toX0)
-// 4. Optimize
-
-/** 
-    @title Tiered NFTs
-    @author Filip Knyszewski
-    @notice An ERC721 contract with 3 tiers with different prices 
-    that can all be minted at any time
-    @dev All function calls are currently implemented without side effects
-*/
 contract TieredNFT is ERC721, Ownable {
 
     bool saleIsActive = false;
@@ -38,7 +25,6 @@ contract TieredNFT is ERC721, Ownable {
     mapping (uint256=>Tier) tiers;
 
     // BaseURI
-    string private _baseURIextended;
     mapping(uint256 => string) private _tokenURIs;
 
     modifier isApprovedOrOwner(uint256 tokenId) {
@@ -49,16 +35,10 @@ contract TieredNFT is ERC721, Ownable {
         _;
     }
 
-    // https://stackoverflow.com/questions/64200059/solidity-problem-creating-a-struct-containing-mappings-inside-a-mapping
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         tiers[0] = Tier({price: 0.42 ether, totalSupply: 0, maxSupply: 300, startingIndex: 0, mintsPerAddress : 3});
         tiers[1] = Tier({price: 0.6 ether, totalSupply: 0, maxSupply: 100, startingIndex: 300, mintsPerAddress : 3});
         tiers[2] = Tier({price: 0.9 ether, totalSupply: 0, maxSupply: 20, startingIndex: 400, mintsPerAddress : 3});
-    }
-
-    // @param baseURI_ The baseURI to be used for all the NFTs
-    function setBaseURI(string memory baseURI_) external onlyOwner {
-        _baseURIextended = baseURI_;
     }
 
     // @param tokenId The tokenId of token whose URI we are changing
@@ -71,10 +51,28 @@ contract TieredNFT is ERC721, Ownable {
     }
 
     // @param tier The tier of the NFT to be minted
-    function mint(uint tier) public payable {
+    function mint() public payable {
         require(saleIsActive, "Sale is not active");
+        require(msg.value >= tiers[0].price, "Not enough ETH to mint cheapest tier");
+
+        // Pick tier based on payed price
+        uint tier = 0;
+        if (msg.value == tiers[0].price){
+            tier = 0;
+        } else if (msg.value == tiers[1].price) {
+            tier = 1;
+        } else if (msg.value == tiers[2].price){
+            tier = 2;
+        } else {
+            revert(string.concat(
+                "Wrong amount of ETH provided. Please send of the following amounts: ",
+                Strings.toString(tiers[0].price), ", ",
+                Strings.toString(tiers[1].price), ", ",
+                Strings.toString(tiers[2].price), " gwei")
+             );
+        }
+
         require(tiers[tier].totalSupply + 1 <= tiers[tier].maxSupply, "Exceeded max limit of allowed token mints");
-        require(tiers[tier].price <= msg.value, "Not enough ETH to mint the specified tier");
         require(addressCountsPerTier[tier][msg.sender] + 1 <= tiers[tier].mintsPerAddress, "Max number of mints per address reached");
 
         addressCountsPerTier[tier][msg.sender] = addressCountsPerTier[tier][msg.sender] + 1;
@@ -123,9 +121,8 @@ contract TieredNFT is ERC721, Ownable {
         return tiers[0].maxSupply + tiers[1].maxSupply + tiers[2].maxSupply;
     }
 
-    // @return The tokenURI of a specific tokenId
-    function tokenURI(uint256 tokenId) public view virtual override returns (string memory){
-        return string(abi.encodePacked(_baseURIextended, _tokenURIs[tokenId]));
+    function divider(uint numerator, uint denominator, uint precision) internal pure returns(uint) {
+        return numerator*(uint(10)**uint(precision))/denominator;
     }
 
 }

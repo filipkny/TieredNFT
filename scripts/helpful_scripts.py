@@ -23,13 +23,18 @@ def get_account(index=None, id=None):
     # accounts.add("env")
     # accounts.load("id")
     if index:
+        print("index")
         return accounts[index]
     if id:
+        print("id")
         return accounts.load(id,password="test")
     if (
             network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS
             or network.show_active() in FORKED_LOCAL_ENVIRONMENTS
     ):
+        print("if")
         return accounts[0]
+    
+    print("default")
     return accounts.add(config["wallets"]["from_key"])
 
